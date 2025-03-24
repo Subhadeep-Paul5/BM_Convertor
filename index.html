@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Binary &amp; Morse Converter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Source+Sans+Pro&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Playfair Display', 'serif'],
+            sans: ['Source Sans Pro', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-white text-black font-serif flex flex-col items-center justify-center">
+
+  <main class="bg-white p-6 w-full mt-6 max-w-xl">
+    <div class="border-b-4 border-dashed border-black">
+      <h1 class="text-4xl md:text-5xl font-bold text-center mb-2">Binary &amp; Morse Converter</h1>
+    </div>
+    <p class="font-bold text-center px-4 mt-2 mb-8">Convert your content to text, binary, or morse code</p>
+
+    
+    <textarea id="inputText" class="w-full p-2 border-4 border-dashed border-black focus:outline-none focus:ring-2 focus:ring-black mb-4" rows="4" placeholder="Enter text, binary, or morse code..."></textarea>
+
+    
+    <select id="conversionType" class="w-full p-2 border-4 border-dashed border-black mb-4 focus:outline-none">
+      <option value="textToBinary">Text to Binary</option>
+      <option value="binaryToText">Binary to Text</option>
+      <option value="textToMorse">Text to Morse</option>
+      <option value="morseToText">Morse to Text</option>
+    </select>
+
+    
+    <button onclick="convert()" aria-label="Convert text" class="w-full mt-4 border-4 border-dashed border-black py-2 rounded hover:bg-gray-100">Convert</button>
+
+    
+    <div class="relative mt-4">
+      <textarea id="outputText" class="w-full p-2 border-4 border-dashed border-black focus:outline-none" rows="4" readonly placeholder="Output will appear here..."></textarea>
+      <button onclick="copyToClipboard()" aria-label="Copy output" class="absolute top-2 right-2 border-4 border-dashed border-black px-3 py-1 rounded text-sm hover:bg-gray-100">📑</button>
+    </div>
+  </main>
+
+  <script>
+    
+    const morseCodeMap = {
+      'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+      'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+      'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+      'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+      'Y': '-.--', 'Z': '--..',
+      '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
+      '6': '-....', '7': '--...', '8': '---..', '9': '----.', '0': '-----',
+      ' ': '/'
+    };
+
+    const reverseMorseCodeMap = Object.fromEntries(Object.entries(morseCodeMap).map(([k, v]) => [v, k]));
+
+    const textToBinary = (text) => {
+      return text.split('').map(char => char.charCodeAt(0).toString(2).padStart(8, '0')).join(' ');
+    };
+    
+    const binaryToText = (binary) => {
+      try {
+        return binary.trim().split(/\s+/).map(bin => {
+          if (!/^[01]+$/.test(bin)) throw new Error("Invalid binary input.");
+          return String.fromCharCode(parseInt(bin, 2));
+        }).join('');
+      } catch (e) {
+        alert("Invalid binary input. Please enter valid binary numbers.");
+        return '';
+      }
+    };
+
+    const textToMorse = (text) => {
+      return text.toUpperCase().split('').map(char => {
+        return morseCodeMap[char] || '';
+      }).join(' ');
+    };
+
+    const morseToText = (morse) => {
+      return morse.trim().split(' ').map(code => {
+        if (reverseMorseCodeMap[code] !== undefined) {
+          return reverseMorseCodeMap[code];
+        } else {
+          alert(`Invalid Morse code: "${code}"`);
+          return '';
+        }
+      }).join('');
+    };
+
+
+    const convert = () => {
+      const input = document.getElementById('inputText').value.trim();
+      const conversionType = document.getElementById('conversionType').value;
+      let output = '';
+      if (conversionType === "textToBinary") {
+        output = textToBinary(input);
+      } else if (conversionType === "binaryToText") {
+        output = binaryToText(input);
+      } else if (conversionType === "textToMorse") {
+        output = textToMorse(input);
+      } else if (conversionType === "morseToText") {
+        output = morseToText(input);
+      }
+      document.getElementById('outputText').value = output;
+    };
+
+    const copyToClipboard = () => {
+      const output = document.getElementById('outputText').value;
+      navigator.clipboard.writeText(output).then(() => {
+        alert("Copied to clipboard!");
+      }).catch(err => {
+        alert("Failed to copy: " + err);
+      });
+    };
+  </script>
+</body>
+  </html>
